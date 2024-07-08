@@ -1,54 +1,85 @@
-import userModel from "../models/user.model.js"
-import cartsModel from "../models/carts.model.js";
+import userModel from "../dao/models/user.model.js"
 import { createHash, isValidPassword } from "../utils.js";
 
 class UserService {
     async createUser(userData) {
-        const user = new userModel(userData);
-        const newCart = new cartsModel();
-        await newCart.save();
-
-        user.cartId = newCart._id;
-        await user.save();
-        return user;
+        try {
+            const existingUser = await this.findUserByEmail(userData.email);
+            if (existingUser) {
+                throw new Error("El email ya está registrado");
+            }
+            const user = new userModel(userData);
+            await user.save();
+            return user;
+        } catch (error) {
+            throw new Error (`Error al crear el usuario: ${error.message}`)
+        }
     }
 
     async findUserByEmail(email) {
-        return await userModel.findOne({ email });
+        try {
+            return await userModel.findOne({ email });
+        } catch (error) {
+            throw new Error (`Error al buscar el usuario por email: ${error.message}`)
+        }
     }
 
     async updateUserPassword(userId, newPassword) {
-        const user = await userModel.findById(userId);
-        if (!user) throw new Error("Usuario no encontrado");
-        user.password = createHash(newPassword);
-        await user.save();
-        return user;
+        try {
+            const user = await userModel.findById(userId);
+            if (!user) throw new Error("Usuario no encontrado");
+            user.password = createHash(newPassword);
+            await user.save();
+            return user;
+        } catch (error) {
+            throw new Error (`Error al actualizar la contraseña: ${error.message}`)
+        }
     }
 
     async getUserById(userId) {
-        return await userModel.findById(userId).populate("cartId").lean();
+        try {
+            return await userModel.findById(userId).populate("cartId").lean();
+        } catch (error) {
+            throw new Error(`Error al obtener el usuario por ID: ${error.message}`);
+        }
     }
 
     async updateUserProfile(userId, updatedData) {
-        const user = await userModel.findByIdAndUpdate(userId, updatedData, { new: true})
-        if (!user) throw new Error("Usuario no encontrado")
-        return user
+        try {
+            const user = await userModel.findByIdAndUpdate(userId, updatedData, { new: true });
+            if (!user) throw new Error("Usuario no encontrado");
+            return user;
+        } catch (error) {
+            throw new Error(`Error al actualizar el perfil del usuario: ${error.message}`);
+        }
     }
 
     async deleteUser(userId) {
-        const user = await userModel.findByIdAndDelete(userId)
-        if(!user) throw new Error("Usuario no encontrado")
-        return user
+        try {
+            const user = await userModel.findByIdAndDelete(userId);
+            if (!user) throw new Error("Usuario no encontrado");
+            return user;
+        } catch (error) {
+            throw new Error(`Error al eliminar el usuario: ${error.message}`);
+        }
     }
 
     async listUsers() {
-        return await userModel.find().lean()
+        try {
+            return await userModel.find().lean();
+        } catch (error) {
+            throw new Error(`Error al listar los usuarios: ${error.message}`);
+        }
     }
 
     async validatePassword(userId, candidatePassword) {
-        const user = await userModel.findById(userId)
-        if (!user) throw new Error ("Usuario no encontrado")
-        return isValidPassword(candidatePassword, user.password)
+        try {
+            const user = await userModel.findById(userId);
+            if (!user) throw new Error("Usuario no encontrado");
+            return isValidPassword(candidatePassword, user.password);
+        } catch (error) {
+            throw new Error(`Error al validar la contraseña: ${error.message}`);
+        }
     }
 }
 

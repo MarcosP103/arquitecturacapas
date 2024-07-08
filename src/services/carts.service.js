@@ -1,7 +1,7 @@
 import cartModel from '../dao/models/carts.model.js';
 import productModel from '../dao/models/products.model.js';
 
-export const createCart = async () => {
+const createCart = async () => {
   try {
     const newCart = new cartModel({ products: [] });
     await newCart.save();
@@ -12,7 +12,7 @@ export const createCart = async () => {
   }
 };
 
-export const addProductToCart = async (cartId, productId, quantity) => {
+const addProductToCart = async (cartId, productId, quantity) => {
   try {
     const cart = await cartModel.findById(cartId);
     if (!cart) {
@@ -41,7 +41,7 @@ export const addProductToCart = async (cartId, productId, quantity) => {
   }
 };
 
-export const getCartById = async (cartId) => {
+const getCartById = async (cartId) => {
   try {
     const cart = await cartModel.findById(cartId).populate("products.productId").lean();
     if (!cart) {
@@ -55,7 +55,7 @@ export const getCartById = async (cartId) => {
   }
 };
 
-export const updateCart = async (cartId, products) => {
+const updateCart = async (cartId, products) => {
   try {
     const cart = await cartModel.findById(cartId);
     if (!cart) {
@@ -72,7 +72,7 @@ export const updateCart = async (cartId, products) => {
   }
 };
 
-export const updateProductQuantity = async (cartId, productId, quantity) => {
+const updateProductQuantity = async (cartId, productId, quantity) => {
   try {
     const cart = await cartModel.findById(cartId);
     if (!cart) {
@@ -95,7 +95,7 @@ export const updateProductQuantity = async (cartId, productId, quantity) => {
   }
 };
 
-export const removeProductFromCart = async (cartId, productId) => {
+const removeProductFromCart = async (cartId, productId) => {
   try {
     const cart = await cartModel.findById(cartId);
     if (!cart) {
@@ -112,7 +112,7 @@ export const removeProductFromCart = async (cartId, productId) => {
   }
 };
 
-export const clearCart = async (cartId) => {
+const clearCart = async (cartId) => {
   try {
     const cart = await cartModel.findById(cartId);
     if (!cart) {
@@ -127,4 +127,14 @@ export const clearCart = async (cartId) => {
     console.error("Error al vaciar el carrito: ", error);
     throw error;
   }
+};
+
+export default {
+  createCart,
+  addProductToCart,
+  getCartById,
+  updateCart,
+  updateProductQuantity,
+  removeProductFromCart,
+  clearCart
 };

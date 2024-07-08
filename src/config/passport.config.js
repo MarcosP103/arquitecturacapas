@@ -1,13 +1,12 @@
 import passport from "passport";
 import GitHubStrategy from "passport-github2";
 import local from "passport-local";
-import userService from "../dao/models/user.model.js";
+import userService from "../services/user.service.js";
 import { createHash, isValidPassword } from "../utils.js";
 
 const LocalStrategy = local.Strategy
 
 const initializePassport = () => {
-  
   passport.use("github", new GitHubStrategy({
         clientID: "Iv23liSYHTwwlrcbPS9c",
         clientSecret: "8ed53d3b958654e51a1a38e29199f257400ce30f",
@@ -17,18 +16,13 @@ const initializePassport = () => {
           console.log(profile);
 
           if (!profile._json.email) {
-            return done(null, false, {
-              message:
+            return done(null, false, { message:
                 "El email no fue otorgado por GitHub. Por favor, complete su perfil.",
             });
           }
 
-          let user = await userService.findOne({ email: profile._json.email });
+          let user = await userService.findUserByEmail(profile._json.email);
           if (!user) {
-            /* const nameParts = profile._json.name.split(' ');
-                const first_name = nameParts[0];
-                const last_name = nameParts.slice(1).join(' ') || "N/A"; */
-
             let newUser = {
               first_name: profile._json.name || profile.username,
               last_name: profile._json.last_name || profile.usaername,
@@ -36,7 +30,7 @@ const initializePassport = () => {
               email: profile._json.email,
               password: createHash("defaultpassword"),
             };
-            let result = await userService.create(newUser);
+            let result = await userService.createUser(newUser);
             done(null, result);
           } else {
             done(null, user);
@@ -54,14 +48,13 @@ const initializePassport = () => {
         const { first_name, last_name, email, age } = req.body;
         try {
           if (!first_name || !last_name || !email || !age || !password) {
-            return done(null, false, {
-              message: "Todos los campos son requeridos",
-            });
+            return done(null, false, {message: "Todos los campos son requeridos"});
           }
   
-          let existingUser = await userService.findOne({ email: username });
-          if (existingUser) {
-            return done(null, false, { message: "El email ya existe" });
+          let user = await userService.findUserByEmail( email )
+          if (user) {
+            console.log("El usuario ya existe")
+            return done(null, false, {message: "El mail ya existe"})
           }
   
           const newUser = {
@@ -72,7 +65,7 @@ const initializePassport = () => {
             password: createHash(password),
           };
   
-          let result = await userService.create(newUser);
+          let result = await userService.createUser(newUser);
   
           return done(null, result);
         } catch (error) {
@@ -88,14 +81,18 @@ const initializePassport = () => {
   });
 
   passport.deserializeUser(async (id, done) => {
-    let user = await userService.findById(id);
-    done(null, user);
+    try {
+      let user = await userService.getUserById(id);
+      done(null, user);
+    } catch (error) {
+      done (error)
+    }
   });
 };
 
 passport.use("login", new LocalStrategy({ usernameField: "email" }, async (username, password, done) => {
         try {
-          const user = await userService.findOne({ email: username });
+          const user = await userService.findUserByEmail( username );
           if (!user) {
             return done(null, false, { message: "Usuario no encontrado" });
           }

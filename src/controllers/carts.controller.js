@@ -38,7 +38,7 @@ export const getCartById = async (req, res) => {
     if (!cart) {
       return res.status(404).json({ error: "Carrito no encontrado" });
     }
-    res.render("cartDetail", { cart });
+    res.json(cart)
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al obtener el carrito" });
