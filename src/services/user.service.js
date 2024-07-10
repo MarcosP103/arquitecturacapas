@@ -76,7 +76,7 @@ class UserService {
         try {
             const user = await userModel.findById(userId);
             if (!user) throw new Error("Usuario no encontrado");
-            return isValidPassword(candidatePassword, user.password);
+            return await isValidPassword(candidatePassword, user.password);
         } catch (error) {
             throw new Error(`Error al validar la contraseña: ${error.message}`);
         }

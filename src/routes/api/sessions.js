@@ -1,26 +1,39 @@
 import { Router } from "express";
 import passport from "passport";
 import initializePassport from "../../config/passport.config.js";
-import * as userController from "../../controllers/user.controller.js"
+import {
+  registerUser,
+  failRegister,
+  loginUser,
+  failLogin,
+  logoutUser,
+  restorePasswordForm,
+  restorePassword,
+  githubAuth,
+  githubcallback,
+  editProfileForm,
+  editprofile
+} from "../../controllers/user.controller.js";
 
 const router = Router();
-initializePassport()
+initializePassport();
 
-router.post("/register", passport.authenticate("register", { failureRedirect: "/api/sessions/failregister", failureFlash: true }), userController.registerUser)
-router.get("/failregister", userController.failRegister)
+router.post("/register", passport.authenticate("register", { failureRedirect: "/api/sessions/failregister", failureFlash: true }), registerUser);
+router.get("/failregister", failRegister);
 
-router.post("/login", passport.authenticate("login", { failureRedirect: "api/sessions/faillogin", failureFlash: true }), userController.loginUser)
-router.get("/faillogin", userController.failLogin)
+router.post("/login", passport.authenticate("login", { failureRedirect: "api/sessions/faillogin", failureFlash: true }), loginUser);
+router.get("/faillogin", failLogin);
 
-router.post("/logout", userController.logoutUser)
+router.post("/logout", logoutUser);
 
-router.get("/restorePassword", userController.restorePasswordForm)
-router.post("/restorePassword", userController.restorePassword)
+router.get("/restorePassword", restorePasswordForm);
+router.post("/restorePassword", restorePassword);
 
-router.get("/github", passport.authenticate("github", { scope: ["user:email"]}), userController.githubAuth)
-router.get("/githubcallback", passport.authenticate ("github", { failureRedirect: "/login"}), userController.githubcallback)
+router.get("/github", passport.authenticate("github", { scope: ["user:email"]}), githubAuth);
+router.get("/githubcallback", passport.authenticate ("github", { failureRedirect: "/login"}), githubcallback);
 
-router.get("/editprofile", userController.editProfileForm)
-router.post("/editprofile", userController.editprofile)
+router.get("/editprofile", editProfileForm);
+router.post("/editprofile", editprofile);
 
 export default router;
+
